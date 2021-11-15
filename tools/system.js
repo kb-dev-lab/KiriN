@@ -42,6 +42,7 @@ const System = {
 
     Drawer.setCanvas(canvas);
     Drawer.background("black");
+    Drawer.render();
 
     System._setupResizer();
   },
@@ -77,6 +78,7 @@ const System = {
     Loop.addToEveryFrame(() => {
       for (let i = 0; i < System._speed; i++) {
         System._currentDrawer.draw();
+        Drawer.render();
       }
     });
   },

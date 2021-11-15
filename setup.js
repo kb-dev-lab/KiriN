@@ -1,2 +1,2 @@
 System.initApp();
-System.loadDrawer(new SimpleDrawer());
+System.loadDrawer(new Mountain());
