@@ -1,2 +1,2 @@
 System.initApp();
-System.loadDrawer(new Mountain());
+System.loadDrawer(new TurningHazardousShape());

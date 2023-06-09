@@ -1,60 +1,70 @@
 class Mountain extends BasicDrawer {
-  getControls() {
-    return [
-      Controls.createRange({
-        min: 2,
-        max: 6,
-        text: "Step",
-        value: 3,
-        onChange: (e) => {
-          this._nextStep = Math.pow(2, parseInt(e.target.value, 10));
-        },
-      }),
-    ];
-  }
+	getControls() {
+		return [
+			Controls.createRange({
+				min: 2,
+				max: 6,
+				text: 'Step',
+				value: 3,
+				onChange: (e) => {
+					this._nextStep = Math.pow(2, parseInt(e.target.value, 10));
+				},
+			}),
+		];
+	}
 
-  init() {
-    const size = System.getWindowSize();
-    const nbPoints = Generator.getInt(16, 8);
-    const nbMountains = Generator.getInt(20, 12);
-    const maxDiffX = Generator.getInt(size.width / nbPoints);
+	init() {
+		const size = System.getWindowSize();
+		const nbPoints = Generator.getInt(16, 8);
+		const nbMountains = Generator.getInt(20, 12);
+		const maxDiffX = Generator.getInt(size.width / nbPoints);
 
-    this._mountains = [];
-    this._points = [];
+		this._mountains = [];
+		this._points = [];
 
-    for (let i = 0; i < nbMountains; i++) {
-      const currentSegmentX = (i * size.width) / nbMountains;
-      const nextX = ((i + 1) * size.width) / nbMountains;
+		for (let i = 0; i < nbMountains; i++) {
+			const currentSegmentX = (i * size.width) / nbMountains;
+			const nextX = ((i + 1) * size.width) / nbMountains;
 
-      this._mountains.push(
-        Point(Generator.getInt(nextX, currentSegmentX), size.height)
-      );
-    }
+			const subDivision = Generator.getInt(2, 0);
+			const subSegmentWidth = size.width / nbMountains / subDivision;
+			let prevX = currentSegmentX;
 
-    this._step = 4;
-    this._nextStep = 4;
+			for (let j = 0; j < subDivision; j++) {
+				const xValue = prevX + Generator.getInt(subSegmentWidth, subSegmentWidth / 6);
 
-    Drawer.background();
-  }
+				this._mountains.push(
+					CartesianPoint(xValue, Generator.getInt(size.height + 100, size.height - 100)),
+				);
 
-  draw() {
-    if (this._step !== this._nextStep) {
-      this._step = this._nextStep;
-    }
+				prevX += subSegmentWidth;
+			}
+		}
 
-    const size = System.getWindowSize();
-    const prevX = this._x;
-    const prevY = this._y;
+		this._step = 4;
+		this._nextStep = 4;
 
-    Drawer.setStroke("#FFFFFF10");
+		Drawer.background('#BBEEBB');
+	}
 
-    this._mountains.forEach((mountain) => {
-      mountain.x = mountain.x + Generator.getInt(this._step, -this._step);
-      mountain.y = mountain.y + Generator.getInt(this._step, -this._step);
-    });
+	draw() {
+		if (this._step !== this._nextStep) {
+			this._step = this._nextStep;
+		}
 
-    Drawer.addSmoothLine(this._mountains, 6);
-  }
+		const size = System.getWindowSize();
+		const prevX = this._x;
+		const prevY = this._y;
+
+		Drawer.setStroke('#11331110');
+
+		this._mountains.forEach((mountain) => {
+			mountain.x += Generator.getInt(this._step / 2, -this._step / 2);
+			mountain.y += Generator.getInt(this._step - 1, -this._step);
+		});
+
+		Drawer.addSmoothLine(this._mountains, 8);
+	}
 }
 
 Drawers.push(Mountain);

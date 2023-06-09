@@ -1,13 +1,17 @@
 const Generator = {
-  getColor: () => {
-    return `rgb(${Generator.getInt(256)}, ${Generator.getInt(
-      256
-    )},${Generator.getInt(256)})`;
-  },
+	getColor: () => {
+		return `rgb(${Generator.getInt(256)}, ${Generator.getInt(256)},${Generator.getInt(256)})`;
+	},
 
-  getInt: (max, min = 0) => {
-    return Math.floor(Math.random() * (max - min)) + min;
-  },
+	getColorWithOpacity: (opacity) => {
+		return `rgba(${Generator.getInt(256)}, ${Generator.getInt(256)},${Generator.getInt(256)},${(
+			opacity / 256
+		).toFixed(3)})`;
+	},
 
-  createColorGenerator: () => {},
+	getInt: (max, min = 0) => {
+		return Math.trunc(Math.random() * (max + 1 - min)) + min;
+	},
+
+	createColorGenerator: () => {},
 };

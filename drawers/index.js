@@ -1,15 +1,15 @@
 class BasicDrawer {
-  getControls() {
-    return [];
-  }
+	getControls() {
+		return [];
+	}
 
-  draw() {
-    throw new Error("No draw() implemented");
-  }
+	draw(i) {
+		throw new Error('No draw() implemented');
+	}
 
-  init() {
-    throw new Error("No init() implemented");
-  }
+	init() {
+		throw new Error('No init() implemented');
+	}
 }
 
 const Drawers = [];

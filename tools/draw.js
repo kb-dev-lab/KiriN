@@ -1,146 +1,149 @@
 const applyChaikin = (points, factor) => {
-  const result = [];
+	const result = [];
 
-  result.push(points[0]);
+	result.push(points[0]);
 
-  for (let i = 1; i < points.length - 1; i++) {
-    result.push({
-      x: points[i - 1].x * 0.75 + points[i].x * 0.25,
-      y: points[i - 1].y * 0.75 + points[i].y * 0.25,
-    });
+	for (let i = 1; i < points.length - 1; i++) {
+		result.push({
+			x: points[i - 1].x * 0.75 + points[i].x * 0.25,
+			y: points[i - 1].y * 0.75 + points[i].y * 0.25,
+		});
 
-    result.push({
-      x: points[i - 1].x * 0.25 + points[i].x * 0.75,
-      y: points[i - 1].y * 0.25 + points[i].y * 0.75,
-    });
-  }
+		result.push({
+			x: points[i - 1].x * 0.25 + points[i].x * 0.75,
+			y: points[i - 1].y * 0.25 + points[i].y * 0.75,
+		});
+	}
 
-  result.push(points[points.length - 1]);
+	result.push(points[points.length - 1]);
 
-  if (factor > 0) {
-    return applyChaikin(result, factor - 1);
-  }
+	if (factor > 0) {
+		return applyChaikin(result, factor - 1);
+	}
 
-  return result;
+	return result;
 };
 
 const Drawer = {
-  /**
-   * @type {HTMLCanvasElement}
-   */
-  _canvas: null,
+	/**
+	 * @type {HTMLCanvasElement}
+	 */
+	_canvas: null,
 
-  /**
-   * @type {RenderingContext}
-   */
-  _context: null,
+	/**
+	 * @type {RenderingContext}
+	 */
+	_context: null,
 
-  /**
-   * @type {HTMLCanvasElement}
-   */
-  _hiddenCanvas: null,
+	/**
+	 * @type {HTMLCanvasElement}
+	 */
+	_hiddenCanvas: null,
 
-  /**
-   * @type {RenderingContext}
-   */
-  _hiddenContext: null,
+	/**
+	 * @type {RenderingContext}
+	 */
+	_hiddenContext: null,
 
-  addLine: (x, y, x2, y2) => {
-    Drawer._hiddenContext.beginPath();
-    Drawer._hiddenContext.moveTo(x, y);
-    Drawer._hiddenContext.lineTo(x2, y2);
-    Drawer._hiddenContext.stroke();
-  },
+	addLine: (x, y, x2, y2, lineWidth) => {
+		Drawer._hiddenContext.lineWidth = lineWidth;
 
-  /**
-   * Draw a smooth line with the Chakin Algorithm
-   * (see http://graphics.cs.ucdavis.edu/education/CAGDNotes/Chaikins-Algorithm/Chaikins-Algorithm.html)
-   * @param {Array<Point>} points
-   * @param {number} smoothFactor - number of iterations of the smooth algorithm
-   */
-  addSmoothLine: (points, smoothFactor) => {
-    Drawer._hiddenContext.beginPath();
+		Drawer._hiddenContext.beginPath();
+		Drawer._hiddenContext.moveTo(x, y);
+		Drawer._hiddenContext.lineTo(x2, y2);
+		Drawer._hiddenContext.stroke();
+	},
 
-    const smoothLine = applyChaikin(points, smoothFactor);
+	addDegressiveLine: (x, y, x2, y2, lineWidth) => {
+		const gradient = Drawer._hiddenContext.createLinearGradient(x, y, x2, y2);
+		gradient.addColorStop(0, this._currentStrokeColor);
+		gradient.addColorStop(1, this._backgroundColor);
 
-    Drawer._hiddenContext.moveTo(smoothLine[0].x, smoothLine[0].y);
+		Drawer._hiddenContext.strokeStyle = gradient;
+		Drawer.addLine(x, y, x2, y2, lineWidth);
+	},
 
-    for (let i = 1; i < smoothLine.length; i++) {
-      Drawer._hiddenContext.lineTo(smoothLine[i].x, smoothLine[i].y);
-    }
+	/**
+	 * Draw a smooth line with the Chakin Algorithm
+	 * (see http://graphics.cs.ucdavis.edu/education/CAGDNotes/Chaikins-Algorithm/Chaikins-Algorithm.html)
+	 * @param {Array<CartesianPoint>} points
+	 * @param {number} smoothFactor - number of iterations of the smooth algorithm
+	 */
+	addSmoothLine: (points, smoothFactor) => {
+		Drawer._hiddenContext.beginPath();
 
-    Drawer._hiddenContext.stroke();
-  },
+		const smoothLine = applyChaikin(points, smoothFactor);
 
-  drawCurve: (startX, startY, ...points) => {
-    Drawer._hiddenContext.beginPath();
-    Drawer._hiddenContext.moveTo(startX, startY);
+		Drawer._hiddenContext.moveTo(smoothLine[0].x, smoothLine[0].y);
 
-    points.forEach((point) => {
-      Drawer._hiddenContext.bezierCurveTo(
-        point.c1x,
-        point.c1y,
-        point.c2x,
-        point.c2y,
-        point.ex,
-        point.ey
-      );
-    });
+		for (let i = 1; i < smoothLine.length; i++) {
+			Drawer._hiddenContext.lineTo(smoothLine[i].x, smoothLine[i].y);
+		}
 
-    Drawer._hiddenContext.stroke();
-  },
+		Drawer._hiddenContext.stroke();
+	},
 
-  drawQuadraticCurve: (startX, startY, ...points) => {
-    Drawer._hiddenContext.beginPath();
-    Drawer._hiddenContext.moveTo(startX, startY);
+	drawCurve: (startX, startY, ...points) => {
+		Drawer._hiddenContext.beginPath();
+		Drawer._hiddenContext.moveTo(startX, startY);
 
-    points.forEach((point) => {
-      Drawer._hiddenContext.quadraticCurveTo(
-        point.cx,
-        point.cy,
-        point.ex,
-        point.ey
-      );
-    });
+		points.forEach((point) => {
+			Drawer._hiddenContext.bezierCurveTo(
+				point.c1x,
+				point.c1y,
+				point.c2x,
+				point.c2y,
+				point.ex,
+				point.ey,
+			);
+		});
 
-    Drawer._hiddenContext.stroke();
-  },
+		Drawer._hiddenContext.stroke();
+	},
 
-  background: (color) => {
-    Drawer._hiddenContext.fillStyle = color;
-    Drawer._hiddenContext.fillRect(
-      0,
-      0,
-      Drawer._canvas.width,
-      Drawer._canvas.height
-    );
-  },
+	drawQuadraticCurve: (startX, startY, ...points) => {
+		Drawer._hiddenContext.beginPath();
+		Drawer._hiddenContext.moveTo(startX, startY);
 
-  rect: () => {
-    Drawer._hiddenContext.fillStyle = "green";
-    Drawer._hiddenContext.fillRect(10, 10, 100, 100);
-  },
+		points.forEach((point) => {
+			Drawer._hiddenContext.quadraticCurveTo(point.cx, point.cy, point.ex, point.ey);
+		});
 
-  render: () => {
-    Drawer._context.drawImage(Drawer._hiddenCanvas, 0, 0);
-  },
+		Drawer._hiddenContext.stroke();
+	},
 
-  /**
-   * Set the main canvas
-   * @param {HTMLCanvasElement} canvas
-   */
-  setCanvas: (canvas) => {
-    Drawer._canvas = canvas;
-    Drawer._context = canvas.getContext("2d");
+	background: (color) => {
+		Drawer._hiddenContext.fillStyle = color;
+		Drawer._hiddenContext.fillRect(0, 0, Drawer._canvas.width, Drawer._canvas.height);
+		this._backgroundColor = color;
+	},
 
-    Drawer._hiddenCanvas = document.createElement("canvas");
-    Drawer._hiddenCanvas.width = canvas.width;
-    Drawer._hiddenCanvas.height = canvas.height;
+	rect: () => {
+		Drawer._hiddenContext.fillStyle = 'green';
+		Drawer._hiddenContext.fillRect(10, 10, 100, 100);
+	},
 
-    Drawer._hiddenContext = Drawer._hiddenCanvas.getContext("2d");
-  },
+	render: () => {
+		Drawer._context.drawImage(Drawer._hiddenCanvas, 0, 0);
+	},
 
-  setStroke: (color) => {
-    Drawer._hiddenContext.strokeStyle = color;
-  },
+	/**
+	 * Set the main canvas
+	 * @param {HTMLCanvasElement} canvas
+	 */
+	setCanvas: (canvas) => {
+		Drawer._canvas = canvas;
+		Drawer._context = canvas.getContext('2d');
+
+		Drawer._hiddenCanvas = document.createElement('canvas');
+		Drawer._hiddenCanvas.width = canvas.width;
+		Drawer._hiddenCanvas.height = canvas.height;
+
+		Drawer._hiddenContext = Drawer._hiddenCanvas.getContext('2d');
+	},
+
+	setStroke: (color) => {
+		Drawer._hiddenContext.strokeStyle = color;
+		this._currentStrokeColor = color;
+	},
 };
